@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import DriverPanel from "@/components/DriverPanel";
+import ForecastTable from "@/components/ForecastTable";
 import Footer from "@/components/Footer";
 import { getDefaultDriverValues, DriverValues } from "@/lib/disneyData";
 
@@ -39,24 +40,8 @@ export default function DashboardPage() {
         {/* Main canvas — scrollable */}
         <main className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
 
-          {/* Forecast Table placeholder */}
-          <div className="card">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-tertiary)" }}
-            >
-              Segment Forecast
-            </p>
-            <div
-              className="h-48 rounded flex items-center justify-center text-sm"
-              style={{
-                backgroundColor: "var(--color-bg-subtle)",
-                color: "var(--color-text-tertiary)",
-              }}
-            >
-              Forecast Table — Step 6
-            </div>
-          </div>
+          {/* Forecast Table */}
+          <ForecastTable drivers={drivers} />
 
           {/* Charts row placeholder */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
