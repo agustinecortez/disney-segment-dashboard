@@ -6,6 +6,7 @@ import DriverPanel from "@/components/DriverPanel";
 import ForecastTable from "@/components/ForecastTable";
 import SegmentChart from "@/components/SegmentChart";
 import TornadoChart from "@/components/TornadoChart";
+import NarrativePanel from "@/components/NarrativePanel";
 import Footer from "@/components/Footer";
 import { getDefaultDriverValues, DriverValues } from "@/lib/disneyData";
 
@@ -52,24 +53,8 @@ export default function DashboardPage() {
             <TornadoChart drivers={drivers} />
           </div>
 
-          {/* Narrative placeholder */}
-          <div className="card">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-4"
-              style={{ color: "var(--color-text-tertiary)" }}
-            >
-              Scenario Briefing
-            </p>
-            <div
-              className="h-32 rounded flex items-center justify-center text-sm"
-              style={{
-                backgroundColor: "var(--color-bg-subtle)",
-                color: "var(--color-text-tertiary)",
-              }}
-            >
-              Narrative Panel — Step 9
-            </div>
-          </div>
+          {/* Narrative Panel */}
+          <NarrativePanel drivers={drivers} />
 
           {/* Mobile: driver panel stacks below charts */}
           <div className="lg:hidden">
