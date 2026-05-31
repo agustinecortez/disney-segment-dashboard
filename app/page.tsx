@@ -7,6 +7,7 @@ import ForecastTable from "@/components/ForecastTable";
 import SegmentChart from "@/components/SegmentChart";
 import TornadoChart from "@/components/TornadoChart";
 import NarrativePanel from "@/components/NarrativePanel";
+import AboutCard from "@/components/AboutCard";
 import Footer from "@/components/Footer";
 import { getDefaultDriverValues, DriverValues } from "@/lib/disneyData";
 
@@ -67,26 +68,8 @@ export default function DashboardPage() {
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <Footer />
 
-      {/* ── About modal stub — full implementation Step 10 ─────────────── */}
-      {aboutOpen && (
-        <div className="modal-backdrop" onClick={() => setAboutOpen(false)}>
-          <div className="card w-full max-w-xl" onClick={(e) => e.stopPropagation()}>
-            <p className="font-semibold text-base mb-2" style={{ color: "var(--color-text-primary)" }}>
-              About this dashboard
-            </p>
-            <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-              Full About card — Step 10
-            </p>
-            <button
-              className="mt-4 text-sm font-medium"
-              style={{ color: "var(--color-primary)" }}
-              onClick={() => setAboutOpen(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      {/* ── About modal ─────────────────────────────────────────────────── */}
+      <AboutCard isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
     </div>
   );
 }
