@@ -39,6 +39,8 @@
 @theme inline {
   --color-background: var(--color-bg-primary);
   --color-foreground: var(--color-text-primary);
+  /* System sans-serif stack — no web font required */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* ── Base styles ─────────────────────────────────────────────────────────── */

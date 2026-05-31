@@ -149,9 +149,9 @@ export const DISNEY_CONFIG: CompanyConfig = {
           id: "entertainmentMargin",
           label: "Entertainment Operating Margin",
           description:
-            "Bottom-line segment margin. FY25 actual: 11.0%. Disney guides DTC SVOD to 10% margin in FY26 — mix shift toward DTC is margin-accretive at scale.",
+            "Bottom-line segment margin. FY25 actual: 11.0%. Disney guides DTC SVOD to 10% margin in FY26; blended segment margin benefits from DTC mix shift as linear declines. Default of 11.5% reflects modest expansion from FY25.",
           unit: "margin",
-          defaultValue: 11.0,
+          defaultValue: 11.5,
           min: 6,
           max: 18,
           step: 0.5,
@@ -205,9 +205,9 @@ export const DISNEY_CONFIG: CompanyConfig = {
           id: "sportsMargin",
           label: "Sports Operating Margin",
           description:
-            "Bottom-line segment margin. FY25 actual: 16.3%. Disney guides low-single-digit SOI growth FY26.",
+            "Bottom-line segment margin. FY25 actual: 16.3%. NBA new rights deal starts FY26 and represents a meaningful cost step-up; default of 15.9% reflects that pressure. Disney guides low-single-digit SOI growth FY26.",
           unit: "margin",
-          defaultValue: 16.3,
+          defaultValue: 15.9,
           min: 10,
           max: 22,
           step: 0.5,

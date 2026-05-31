@@ -32,17 +32,17 @@ export default function DashboardPage() {
       <Header onAboutOpen={() => setAboutOpen(true)} onReset={handleReset} />
 
       {/* ── Body: driver rail + main canvas ─────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1" style={{ minHeight: 0 }}>
 
         {/* Left rail — sticky, scrollable internally. Desktop only. */}
-        <div className="hidden lg:flex lg:flex-col" style={{ width: 320, minWidth: 320 }}>
+        <div className="hidden lg:flex lg:flex-col flex-shrink-0" style={{ width: 320 }}>
           <div className="sticky top-16 h-[calc(100vh-64px)] overflow-y-auto">
             <DriverPanel drivers={drivers} onChange={handleDriverChange} />
           </div>
         </div>
 
         {/* Main canvas — scrollable */}
-        <main className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+        <main className="flex-1 overflow-y-auto px-6 py-6 space-y-4" style={{ minWidth: 0 }}>
 
           {/* Forecast Table */}
           <ForecastTable drivers={drivers} />
@@ -58,7 +58,7 @@ export default function DashboardPage() {
           <NarrativePanel drivers={drivers} />
 
           {/* Mobile: driver panel stacks below charts */}
-          <div className="lg:hidden">
+          <div className="lg:hidden card p-0 overflow-hidden">
             <DriverPanel drivers={drivers} onChange={handleDriverChange} />
           </div>
 

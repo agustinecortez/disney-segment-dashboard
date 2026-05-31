@@ -92,11 +92,15 @@ function RowLabel({
     <td
       className="px-3 py-2 text-left whitespace-nowrap"
       style={{
-        fontSize: bold ? 13 : 13,
+        fontSize: 13,
         fontWeight: bold ? 600 : 400,
         paddingLeft: indent ? 24 : 12,
         color: color ?? "var(--color-text-primary)",
         borderTop: topBorder ? "2px solid var(--color-border-strong)" : undefined,
+        position: "sticky",
+        left: 0,
+        backgroundColor: "var(--color-bg-card)",
+        zIndex: 1,
       }}
     >
       {label}
@@ -279,6 +283,9 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
                   backgroundColor: "var(--color-primary)",
                   color: "#ffffff",
                   minWidth: 200,
+                  position: "sticky",
+                  left: 0,
+                  zIndex: 2,
                 }}
               >
                 Line Item

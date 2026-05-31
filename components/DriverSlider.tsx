@@ -18,6 +18,7 @@ export default function DriverSlider({
   accentColor,
 }: DriverSliderProps) {
   const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipAbove, setTooltipAbove] = useState(true);
 
   const isMargin = driver.unit === "margin";
   const isNegativeDriver = driver.id === "linearDecline";
@@ -58,9 +59,17 @@ export default function DriverSlider({
             <button
               className="flex items-center justify-center rounded-full transition-colors"
               style={{ color: "var(--color-text-tertiary)", width: 16, height: 16 }}
-              onMouseEnter={() => setTooltipVisible(true)}
+              onMouseEnter={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setTooltipAbove(rect.top > 160);
+                setTooltipVisible(true);
+              }}
               onMouseLeave={() => setTooltipVisible(false)}
-              onFocus={() => setTooltipVisible(true)}
+              onFocus={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setTooltipAbove(rect.top > 160);
+                setTooltipVisible(true);
+              }}
               onBlur={() => setTooltipVisible(false)}
               aria-label={`Info: ${driver.label}`}
               tabIndex={0}
@@ -70,24 +79,29 @@ export default function DriverSlider({
 
             {tooltipVisible && (
               <div
-                className="absolute left-0 bottom-full mb-1 z-50 rounded-md p-2.5 shadow-lg text-xs leading-relaxed"
+                className="absolute left-0 z-50 rounded-md p-2.5 shadow-lg text-xs leading-relaxed"
                 style={{
                   width: 240,
                   backgroundColor: "var(--color-primary)",
                   color: "#ffffff",
                   border: "1px solid var(--color-primary-hover)",
+                  ...(tooltipAbove
+                    ? { bottom: "100%", marginBottom: 4 }
+                    : { top: "100%", marginTop: 4 }),
                 }}
               >
                 {driver.description}
-                {/* Small arrow */}
+                {/* Arrow pointing toward the button */}
                 <div
-                  className="absolute top-full left-2"
+                  className="absolute left-2"
                   style={{
                     width: 0,
                     height: 0,
                     borderLeft: "5px solid transparent",
                     borderRight: "5px solid transparent",
-                    borderTop: "5px solid var(--color-primary)",
+                    ...(tooltipAbove
+                      ? { top: "100%", borderTop: "5px solid var(--color-primary)" }
+                      : { bottom: "100%", borderBottom: "5px solid var(--color-primary)" }),
                   }}
                 />
               </div>
