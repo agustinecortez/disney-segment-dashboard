@@ -194,9 +194,9 @@ export const DISNEY_CONFIG: CompanyConfig = {
           id: "sportsRightsCostGrowth",
           label: "Sports Rights & Programming Cost Growth",
           description:
-            "Contractual sports rights increases (NBA, NFL, college). FY25: rising. NBA new deal starts FY26 and represents a meaningful step-up.",
+            "Contractual sports rights and programming cost increases. FY25 actual: rising mid-single-digit on existing portfolio. NBA new deal in FY26 represents a meaningful step-up — move slider to +6-8% to model that scenario. Programming costs are approximately 50% of Sports revenue; when cost growth exceeds revenue growth, Sports operating margin compresses proportionally.",
           unit: "percent",
-          defaultValue: 6,
+          defaultValue: 4,
           min: 0,
           max: 15,
           step: 0.5,
@@ -205,9 +205,9 @@ export const DISNEY_CONFIG: CompanyConfig = {
           id: "sportsMargin",
           label: "Sports Operating Margin",
           description:
-            "Bottom-line segment margin. FY25 actual: 16.3%. NBA new rights deal starts FY26 and represents a meaningful cost step-up; default of 15.9% reflects that pressure. Disney guides low-single-digit SOI growth FY26.",
+            "Sports segment operating margin before adjustment for programming cost vs. revenue growth differential. FY25 actual: 16.3%. The sportsRightsCostGrowth driver applies an additional adjustment on top of this base — if programming costs grow faster than revenue, the effective margin compresses below this value automatically.",
           unit: "margin",
-          defaultValue: 15.9,
+          defaultValue: 16.3,
           min: 10,
           max: 22,
           step: 0.5,

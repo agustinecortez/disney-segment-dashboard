@@ -121,6 +121,43 @@ function makeSegmentForecast(
   return { revenue, operatingIncome, operatingMargin: marginPct };
 }
 
+/**
+ * Compute effective Sports operating margin after adjusting for programming
+ * cost growth vs. revenue growth differential.
+ *
+ * Economic logic: programming costs are ~50% of Sports revenue. When costs
+ * grow faster than revenue, the margin compresses proportionally to the cost
+ * share of revenue times the differential.
+ *
+ * The growth rate uses ORGANIC (pre-53rd-week) revenue as the base. The 53rd
+ * fiscal week is a calendar artifact — including it would make costs appear
+ * cheaper relative to revenue in FY26 and distort the adjustment in every
+ * subsequent year whose prior-year base includes the 53rd-week boost.
+ *
+ * Formula:
+ *   revenueGrowthRate     = (organicSportsRevenue / prevSportsRevenue) - 1
+ *   programmingCostGrowth = sportsRightsCostGrowth / 100
+ *   costShareOfRevenue    = 0.50
+ *   marginAdjustment      = -costShareOfRevenue × (programmingCostGrowth − revenueGrowthRate)
+ *   effectiveMargin       = sportsMargin + (marginAdjustment × 100)
+ *
+ * Note: the OI calculation (sportsRevenue × effectiveMargin) in the caller
+ * continues to use the as-reported (post-53rd) revenue — the fix is to the
+ * margin-adjustment math only.
+ */
+function computeEffectiveSportsMargin(
+  organicSportsRevenue: number, // pre-53rd-week, for growth rate calc only
+  prevSportsRevenue: number,    // prior year as-reported revenue
+  drivers: DriverValues
+): number {
+  const revenueGrowthRate = organicSportsRevenue / prevSportsRevenue - 1;
+  const programmingCostGrowthRate = drivers.sportsRightsCostGrowth / 100;
+  const costShareOfRevenue = 0.50;
+  const marginAdjustment =
+    -1 * costShareOfRevenue * (programmingCostGrowthRate - revenueGrowthRate);
+  return drivers.sportsMargin + marginAdjustment * 100;
+}
+
 /** Roll up three segments into totals. */
 function rollup(
   entertainment: SegmentForecast,
@@ -182,14 +219,22 @@ function buildFY25Actual(): YearForecast {
 
 /**
  * Project one forecast year, given previous-year LOB state and driver values.
- * Returns the YearForecast and the updated LOB state for the next year.
+ *
+ * prevSportsRevenue: the actual computed sports revenue from the prior year
+ * (used in the programming cost vs. revenue growth adjustment).
+ * For FY26 this is the FY25 actual (17,672). For FY27/FY28 it is the prior
+ * forecast year's computed sports revenue (including any 53rd-week effect).
+ *
+ * Returns the YearForecast, updated LOB state, and this year's Sports revenue
+ * for threading into the next year.
  */
 function projectYear(
   year: string,
   prevLOB: LOBState,
+  prevSportsRevenue: number,
   drivers: DriverValues,
   applyFiftyThirdWeek: boolean
-): { forecast: YearForecast; nextLOB: LOBState } {
+): { forecast: YearForecast; nextLOB: LOBState; sportsRevenue: number } {
   // Revenue projection
   const entLOB = projectEntertainmentRevenue(prevLOB.entertainment, drivers);
   const spoLOB = projectSportsRevenue(prevLOB.sports, drivers);
@@ -199,6 +244,10 @@ function projectYear(
   let spoRevenue = spoLOB.total;
   let expRevenue = expLOB.total;
 
+  // Capture organic (pre-53rd-week) sports revenue for the margin adjustment
+  // growth-rate calculation before the calendar multiplier is applied.
+  const organicSpoRevenue = spoRevenue;
+
   // FY26 53rd-week benefit applied to total company revenue proportionally
   if (applyFiftyThirdWeek) {
     const multiplier = 1 + DISNEY_CONFIG.fiftyThirdWeekBenefit / 100;
@@ -207,10 +256,20 @@ function projectYear(
     expRevenue *= multiplier;
   }
 
-  // Operating income = revenue × margin driver
+  // Operating income = revenue × effective margin
+  // Entertainment and Experiences use margin driver directly.
+  // Sports uses an adjusted margin that accounts for programming cost growth
+  // vs. organic revenue growth (53rd-week excluded from growth rate — see
+  // computeEffectiveSportsMargin). OI itself uses as-reported spoRevenue.
+  const effectiveSportsMargin = computeEffectiveSportsMargin(
+    organicSpoRevenue,  // pre-53rd, for growth rate only
+    prevSportsRevenue,
+    drivers
+  );
+
   const entertainment = makeSegmentForecast(entRevenue, drivers.entertainmentMargin);
-  const sports = makeSegmentForecast(spoRevenue, drivers.sportsMargin);
-  const experiences = makeSegmentForecast(expRevenue, drivers.experiencesMargin);
+  const sports        = makeSegmentForecast(spoRevenue, effectiveSportsMargin);
+  const experiences   = makeSegmentForecast(expRevenue, drivers.experiencesMargin);
 
   const forecast = rollup(entertainment, sports, experiences, year);
 
@@ -232,7 +291,7 @@ function projectYear(
     },
   };
 
-  return { forecast, nextLOB };
+  return { forecast, nextLOB, sportsRevenue: spoRevenue };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -241,23 +300,19 @@ function projectYear(
 
 export function computeFullForecast(drivers: DriverValues): FullForecast {
   const fy25Actual = buildFY25Actual();
-  let lob = seedLOB();
+  const lob = seedLOB();
 
-  const { forecast: fy26, nextLOB: lob27 } = projectYear(
-    "FY26E",
-    lob,
-    drivers,
-    true // 53rd-week benefit applies to FY26 only
-  );
+  // FY25 actual sports revenue as the prior-year baseline for FY26
+  const fy25SportsRevenue = fy25Actual.sports.revenue; // 17,672
 
-  const { forecast: fy27, nextLOB: lob28 } = projectYear(
-    "FY27E",
-    lob27,
-    drivers,
-    false
-  );
+  const { forecast: fy26, nextLOB: lob27, sportsRevenue: fy26SportsRevenue } =
+    projectYear("FY26E", lob, fy25SportsRevenue, drivers, true);
 
-  const { forecast: fy28 } = projectYear("FY28E", lob28, drivers, false);
+  const { forecast: fy27, nextLOB: lob28, sportsRevenue: fy27SportsRevenue } =
+    projectYear("FY27E", lob27, fy26SportsRevenue, drivers, false);
+
+  const { forecast: fy28 } =
+    projectYear("FY28E", lob28, fy27SportsRevenue, drivers, false);
 
   return { fy25Actual, fy26, fy27, fy28 };
 }
@@ -270,22 +325,20 @@ export function computeFullForecast(drivers: DriverValues): FullForecast {
  *   e.g. 8% sub growth → 8.8% upside, 7.2% downside
  *   e.g. 11.0% margin  → 12.1% upside, 9.9% downside
  */
-export function computeTornadoBars(
-  drivers: DriverValues
-): TornadoBar[] {
+export function computeTornadoBars(drivers: DriverValues): TornadoBar[] {
   const baseline = computeFullForecast(drivers).fy26.totalSegmentOI;
 
   // Collect all driver definitions across all segments
   const allDrivers = DISNEY_CONFIG.segments.flatMap((s) => s.drivers);
 
   const bars: TornadoBar[] = allDrivers.map((driver) => {
-    const upDrivers = { ...drivers, [driver.id]: drivers[driver.id] * 1.1 };
+    const upDrivers   = { ...drivers, [driver.id]: drivers[driver.id] * 1.1 };
     const downDrivers = { ...drivers, [driver.id]: drivers[driver.id] * 0.9 };
 
-    const upOI = computeFullForecast(upDrivers).fy26.totalSegmentOI;
+    const upOI   = computeFullForecast(upDrivers).fy26.totalSegmentOI;
     const downOI = computeFullForecast(downDrivers).fy26.totalSegmentOI;
 
-    const upsideDelta = upOI - baseline;
+    const upsideDelta   = upOI - baseline;
     const downsideDelta = downOI - baseline;
 
     return {
