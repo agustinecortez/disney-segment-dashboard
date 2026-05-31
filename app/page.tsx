@@ -4,6 +4,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import DriverPanel from "@/components/DriverPanel";
 import ForecastTable from "@/components/ForecastTable";
+import SegmentChart from "@/components/SegmentChart";
 import Footer from "@/components/Footer";
 import { getDefaultDriverValues, DriverValues } from "@/lib/disneyData";
 
@@ -45,23 +46,7 @@ export default function DashboardPage() {
 
           {/* Charts row placeholder */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="card">
-              <p
-                className="text-xs font-semibold uppercase tracking-widest mb-4"
-                style={{ color: "var(--color-text-tertiary)" }}
-              >
-                Segment Revenue &amp; OI
-              </p>
-              <div
-                className="h-64 rounded flex items-center justify-center text-sm"
-                style={{
-                  backgroundColor: "var(--color-bg-subtle)",
-                  color: "var(--color-text-tertiary)",
-                }}
-              >
-                Segment Chart — Step 7
-              </div>
-            </div>
+            <SegmentChart drivers={drivers} />
 
             <div className="card">
               <p
