@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import DriverPanel from "@/components/DriverPanel";
 import ForecastTable from "@/components/ForecastTable";
 import SegmentChart from "@/components/SegmentChart";
+import TornadoChart from "@/components/TornadoChart";
 import Footer from "@/components/Footer";
 import { getDefaultDriverValues, DriverValues } from "@/lib/disneyData";
 
@@ -48,23 +49,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <SegmentChart drivers={drivers} />
 
-            <div className="card">
-              <p
-                className="text-xs font-semibold uppercase tracking-widest mb-4"
-                style={{ color: "var(--color-text-tertiary)" }}
-              >
-                FY26 OI Sensitivity
-              </p>
-              <div
-                className="h-64 rounded flex items-center justify-center text-sm"
-                style={{
-                  backgroundColor: "var(--color-bg-subtle)",
-                  color: "var(--color-text-tertiary)",
-                }}
-              >
-                Tornado Chart — Step 8
-              </div>
-            </div>
+            <TornadoChart drivers={drivers} />
           </div>
 
           {/* Narrative placeholder */}
