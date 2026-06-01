@@ -253,7 +253,8 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
   const { fy25Actual, fy26, fy27, fy28 } = forecast;
 
   return (
-    <div className="card p-0 overflow-hidden">
+    <div className="overflow-x-auto">
+    <div className="card p-0 overflow-hidden" style={{ minWidth: 600 }}>
       {/* Card header */}
       <div
         className="px-6 py-3 border-b flex items-center justify-between"
@@ -438,6 +439,7 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
           YoY growth shown below each forecast value. ▲ green = positive, ▼ red = negative.
         </p>
       </div>
+    </div>
     </div>
   );
 }
