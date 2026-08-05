@@ -265,7 +265,7 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
             Segment Forecast
           </p>
           <p className="text-xs mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>
-            Dollars in $M · FY25 actual + FY26–28 projected
+            Dollars in $M · FY25 actual + FY26–28 forecast
           </p>
         </div>
         <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
@@ -292,9 +292,9 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
                 Line Item
               </th>
               <ColHeader label="FY25 Actual" isForecast={false} />
-              <ColHeader label="FY26E" isForecast hasFiftyThird />
-              <ColHeader label="FY27E" isForecast />
-              <ColHeader label="FY28E" isForecast />
+              <ColHeader label="FY26 Forecast" isForecast hasFiftyThird />
+              <ColHeader label="FY27 Forecast" isForecast />
+              <ColHeader label="FY28 Forecast" isForecast />
             </tr>
           </thead>
 

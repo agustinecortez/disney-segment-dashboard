@@ -36,7 +36,7 @@ export interface CompanyConfig {
   ticker: string;
   fiscalYearEndDate: string;
   baselineYear: string; // "FY25"
-  forecastYears: string[]; // ["FY26E", "FY27E", "FY28E"]
+  forecastYears: string[]; // ["FY26 Forecast", "FY27 Forecast", "FY28 Forecast"]
   belowTheLineAdjustment: number; // $M — bridges Total Segment OI to Net Income
   fxAssumption: number; // % — held constant
   fiftyThirdWeekBenefit: number; // % — applied to FY26 revenue only
@@ -94,7 +94,7 @@ export const DISNEY_CONFIG: CompanyConfig = {
   ticker: "DIS",
   fiscalYearEndDate: "September 27, 2025",
   baselineYear: "FY25",
-  forecastYears: ["FY26E", "FY27E", "FY28E"],
+  forecastYears: ["FY26 Forecast", "FY27 Forecast", "FY28 Forecast"],
 
   // Bridges $17,551M Total Segment OI → $12,404M Net Income to Disney shareholders
   belowTheLineAdjustment: -5_147,
