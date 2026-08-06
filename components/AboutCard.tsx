@@ -131,6 +131,29 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
             </p>
           ))}
 
+          {/* Methodology note (v2) — disclosure of the actuals-based margin
+              trajectory driving default-state OI above Disney's blended
+              actual-plus-Q4-guide outlook. Rendered as its own visually
+              separated section so it does not merge into the credibility
+              narrative above. */}
+          <div
+            className="mt-2 pt-3 border-t"
+            style={{ borderColor: "var(--color-border)" }}
+          >
+            <p
+              className="text-xs font-semibold uppercase tracking-wider mb-2"
+              style={{ color: "var(--color-text-tertiary)" }}
+            >
+              Methodology Note (v2)
+            </p>
+            <p
+              className="text-sm leading-relaxed"
+              style={{ color: "var(--color-text-primary)" }}
+            >
+              {DISNEY_CONFIG.methodologyNote}
+            </p>
+          </div>
+
           {/* Data sourcing section */}
           <div
             className="mt-2 pt-4 border-t"
@@ -157,6 +180,24 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
                   FY25 10-K:
                 </span>{" "}
                 The Walt Disney Company Annual Report on Form 10-K, fiscal year ended September 27, 2025
+              </li>
+              <li>
+                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  Q1 FY26 Actuals:
+                </span>{" "}
+                Disney Q1 FY26 Earnings Press Release, filed February 2, 2026 (fiscal quarter ended December 27, 2025)
+              </li>
+              <li>
+                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  Q2 FY26 Actuals:
+                </span>{" "}
+                Disney Q2 FY26 Earnings Press Release, filed May 6, 2026 (fiscal quarter ended March 28, 2026)
+              </li>
+              <li>
+                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  Q3 FY26 Actuals:
+                </span>{" "}
+                Disney Q3 FY26 Earnings Press Release, filed August 5, 2026 (fiscal quarter ended June 27, 2026)
               </li>
               <li>
                 <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
