@@ -36,7 +36,7 @@ export interface CompanyConfig {
   ticker: string;
   fiscalYearEndDate: string;
   baselineYear: string; // "FY25"
-  forecastYears: string[]; // ["FY26E", "FY27E", "FY28E"]
+  forecastYears: string[]; // ["FY26 Forecast", "FY27 Forecast", "FY28 Forecast"]
   belowTheLineAdjustment: number; // $M — bridges Total Segment OI to Net Income
   fxAssumption: number; // % — held constant
   fiftyThirdWeekBenefit: number; // % — applied to FY26 revenue only
@@ -94,7 +94,7 @@ export const DISNEY_CONFIG: CompanyConfig = {
   ticker: "DIS",
   fiscalYearEndDate: "September 27, 2025",
   baselineYear: "FY25",
-  forecastYears: ["FY26E", "FY27E", "FY28E"],
+  forecastYears: ["FY26 Forecast", "FY27 Forecast", "FY28 Forecast"],
 
   // Bridges $17,551M Total Segment OI → $12,404M Net Income to Disney shareholders
   belowTheLineAdjustment: -5_147,
@@ -293,3 +293,42 @@ export function getDefaultDriverValues(): DriverValues {
   }
   return defaults;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Frozen snapshot of v1.0's shipped FY26 forecast at v1 driver defaults.
+// Captured from the live Vercel deployment at Reset state on 2026-08-05 for
+// retrospective comparison against v2's recalibrated FY26 forecast. These
+// values are constants — never recomputed, never affected by slider movement.
+//
+// Sports operating margin of 16.0% reflects the effective margin after the
+// sportsRightsCostGrowth cost/revenue differential adjustment; the underlying
+// sportsMargin slider default at v1 was 16.3%.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface PriorSegmentForecast {
+  revenue: number; // $M
+  operatingIncome: number; // $M
+  operatingMargin: number; // percent, e.g. 11.5
+}
+
+export interface PriorFY26Forecast {
+  entertainment: PriorSegmentForecast;
+  sports: PriorSegmentForecast;
+  experiences: PriorSegmentForecast;
+  totalSegmentOI: number; // $M
+  belowTheLine: number; // $M — signed (negative for deduction)
+  netIncomeProxy: number; // $M
+  shippedOn: string; // ISO date of v1.0 tag
+  capturedFrom: string; // provenance note
+}
+
+export const PRIOR_FY26_FORECAST: PriorFY26Forecast = {
+  entertainment: { revenue: 45_153, operatingIncome: 5_193, operatingMargin: 11.5 },
+  sports:        { revenue: 18_621, operatingIncome: 2_970, operatingMargin: 16.0 },
+  experiences:   { revenue: 39_290, operatingIncome: 10_844, operatingMargin: 27.6 },
+  totalSegmentOI: 19_007,
+  belowTheLine: -5_147,
+  netIncomeProxy: 13_860,
+  shippedOn: "2026-05-31",
+  capturedFrom: "Live Vercel deployment at Reset state, 2026-08-05",
+};

@@ -120,9 +120,9 @@ export default function SegmentChart({ drivers }: SegmentChartProps) {
   // Build chart data — one entry per year, each segment's rev + OI as separate keys
   const years = [
     { label: "FY25", data: forecast.fy25Actual },
-    { label: "FY26E*", data: forecast.fy26 },
-    { label: "FY27E", data: forecast.fy27 },
-    { label: "FY28E", data: forecast.fy28 },
+    { label: "FY26 Forecast*", data: forecast.fy26 },
+    { label: "FY27 Forecast", data: forecast.fy27 },
+    { label: "FY28 Forecast", data: forecast.fy28 },
   ];
 
   const chartData = years.map(({ label, data }) => ({
@@ -175,9 +175,13 @@ export default function SegmentChart({ drivers }: SegmentChartProps) {
             />
             <XAxis
               dataKey="year"
-              tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }}
+              tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }}
               axisLine={{ stroke: "var(--color-border)" }}
               tickLine={false}
+              interval={0}
+              angle={-25}
+              textAnchor="end"
+              height={56}
             />
             <YAxis
               tickFormatter={(v) => `$${(v / 1000).toFixed(0)}B`}

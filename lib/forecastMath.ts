@@ -306,13 +306,13 @@ export function computeFullForecast(drivers: DriverValues): FullForecast {
   const fy25SportsRevenue = fy25Actual.sports.revenue; // 17,672
 
   const { forecast: fy26, nextLOB: lob27, sportsRevenue: fy26SportsRevenue } =
-    projectYear("FY26E", lob, fy25SportsRevenue, drivers, true);
+    projectYear("FY26 Forecast", lob, fy25SportsRevenue, drivers, true);
 
   const { forecast: fy27, nextLOB: lob28, sportsRevenue: fy27SportsRevenue } =
-    projectYear("FY27E", lob27, fy26SportsRevenue, drivers, false);
+    projectYear("FY27 Forecast", lob27, fy26SportsRevenue, drivers, false);
 
   const { forecast: fy28 } =
-    projectYear("FY28E", lob28, fy27SportsRevenue, drivers, false);
+    projectYear("FY28 Forecast", lob28, fy27SportsRevenue, drivers, false);
 
   return { fy25Actual, fy26, fy27, fy28 };
 }
