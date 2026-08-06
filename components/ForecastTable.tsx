@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { DriverValues } from "@/lib/disneyData";
+import { DriverValues, PRIOR_FY26_FORECAST, PriorSegmentForecast } from "@/lib/disneyData";
 import { computeFullForecast, FullForecast, SegmentForecast } from "@/lib/forecastMath";
 
 interface ForecastTableProps {
@@ -44,19 +44,33 @@ function YoYBadge({ current, prior }: { current: number; prior: number }) {
 // Column header cell
 function ColHeader({
   label,
-  isForecast,
+  variant,
   hasFiftyThird,
+  tooltip,
 }: {
   label: string;
-  isForecast: boolean;
+  variant: "actual" | "prior" | "forecast";
   hasFiftyThird?: boolean;
+  tooltip?: string;
 }) {
+  // Prior column reads as historical/frozen: desaturated navy at 65% opacity,
+  // sitting between the solid navy of FY25 Actual and the accent-gold of the
+  // live forecast columns.
+  const bg =
+    variant === "forecast"
+      ? "var(--color-accent)"
+      : variant === "prior"
+        ? "rgba(30, 58, 95, 0.65)" // var(--color-primary) at 65% opacity
+        : "var(--color-primary)";
+  const fg = variant === "forecast" ? "var(--color-primary)" : "#ffffff";
+
   return (
     <th
       className="px-3 py-2.5 text-right text-xs font-semibold whitespace-nowrap"
+      title={tooltip}
       style={{
-        backgroundColor: isForecast ? "var(--color-accent)" : "var(--color-primary)",
-        color: isForecast ? "var(--color-primary)" : "#ffffff",
+        backgroundColor: bg,
+        color: fg,
         minWidth: 110,
       }}
     >
@@ -65,7 +79,7 @@ function ColHeader({
         <span
           className="ml-1"
           title="FY26 includes an estimated +2% benefit from a 53rd fiscal week"
-          style={{ color: isForecast ? "var(--color-primary)" : "#ffffff", opacity: 0.75 }}
+          style={{ color: fg, opacity: 0.75 }}
         >
           *
         </span>
@@ -176,12 +190,51 @@ function ForecastCell({
   );
 }
 
+// Data cell — Prior FY26 Forecast column (frozen v1 snapshot, muted styling,
+// YoY chip computed against FY25 Actual so the growth rate lines up next to
+// the live FY26 Forecast column's chip for direct visual comparison).
+function PriorCell({
+  value,
+  fy25Prior,
+  formatter,
+  bold,
+  topBorder,
+  showYoY,
+}: {
+  value: number;
+  fy25Prior: number;
+  formatter: (v: number) => string;
+  bold?: boolean;
+  topBorder?: boolean;
+  showYoY?: boolean;
+}) {
+  return (
+    <td
+      className="px-3 py-2 text-right tabular-nums"
+      style={{
+        fontSize: 13,
+        fontWeight: bold ? 600 : 400,
+        color: "var(--color-text-secondary)",
+        borderTop: topBorder ? "2px solid var(--color-border-strong)" : undefined,
+      }}
+    >
+      <div>{formatter(value)}</div>
+      {showYoY && (
+        <div className="mt-0.5">
+          <YoYBadge current={value} prior={fy25Prior} />
+        </div>
+      )}
+    </td>
+  );
+}
+
 // ── Segment block rows ────────────────────────────────────────────────────────
 
 function SegmentRows({
   label,
   color,
   actual,
+  prior,
   fy26,
   fy27,
   fy28,
@@ -190,6 +243,7 @@ function SegmentRows({
   label: string;
   color: string;
   actual: SegmentForecast;
+  prior: PriorSegmentForecast;
   fy26: SegmentForecast;
   fy27: SegmentForecast;
   fy28: SegmentForecast;
@@ -200,7 +254,7 @@ function SegmentRows({
       {/* Segment sub-header */}
       <tr>
         <td
-          colSpan={5}
+          colSpan={6}
           className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider"
           style={{
             color,
@@ -216,6 +270,7 @@ function SegmentRows({
       <tr className="hover:bg-[#FAFAF7] transition-colors">
         <RowLabel label="Revenue" indent />
         <ActualCell value={actual.revenue} formatter={fmtM} />
+        <PriorCell value={prior.revenue} fy25Prior={fy25Actual.revenue} formatter={fmtM} showYoY />
         <ForecastCell value={fy26.revenue} prior={fy25Actual.revenue} formatter={fmtM} showYoY isFiftyThirdYear />
         <ForecastCell value={fy27.revenue} prior={fy26.revenue} formatter={fmtM} showYoY />
         <ForecastCell value={fy28.revenue} prior={fy27.revenue} formatter={fmtM} showYoY />
@@ -225,6 +280,7 @@ function SegmentRows({
       <tr className="hover:bg-[#FAFAF7] transition-colors">
         <RowLabel label="Operating Income" indent />
         <ActualCell value={actual.operatingIncome} formatter={fmtM} />
+        <PriorCell value={prior.operatingIncome} fy25Prior={fy25Actual.operatingIncome} formatter={fmtM} showYoY />
         <ForecastCell value={fy26.operatingIncome} prior={fy25Actual.operatingIncome} formatter={fmtM} showYoY isFiftyThirdYear />
         <ForecastCell value={fy27.operatingIncome} prior={fy26.operatingIncome} formatter={fmtM} showYoY />
         <ForecastCell value={fy28.operatingIncome} prior={fy27.operatingIncome} formatter={fmtM} showYoY />
@@ -234,6 +290,7 @@ function SegmentRows({
       <tr className="hover:bg-[#FAFAF7] transition-colors">
         <RowLabel label="Operating Margin" indent />
         <ActualCell value={actual.operatingMargin} formatter={fmtPct} />
+        <PriorCell value={prior.operatingMargin} fy25Prior={fy25Actual.operatingMargin} formatter={fmtPct} />
         <ForecastCell value={fy26.operatingMargin} prior={fy25Actual.operatingMargin} formatter={fmtPct} isFiftyThirdYear />
         <ForecastCell value={fy27.operatingMargin} prior={fy26.operatingMargin} formatter={fmtPct} />
         <ForecastCell value={fy28.operatingMargin} prior={fy27.operatingMargin} formatter={fmtPct} />
@@ -291,10 +348,15 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
               >
                 Line Item
               </th>
-              <ColHeader label="FY25 Actual" isForecast={false} />
-              <ColHeader label="FY26 Forecast" isForecast hasFiftyThird />
-              <ColHeader label="FY27 Forecast" isForecast />
-              <ColHeader label="FY28 Forecast" isForecast />
+              <ColHeader label="FY25 Actual" variant="actual" />
+              <ColHeader
+                label="Prior FY26 Forecast"
+                variant="prior"
+                tooltip="v1.0 forecast as shipped May 31, 2026, frozen for comparison. See README for context."
+              />
+              <ColHeader label="FY26 Forecast" variant="forecast" hasFiftyThird />
+              <ColHeader label="FY27 Forecast" variant="forecast" />
+              <ColHeader label="FY28 Forecast" variant="forecast" />
             </tr>
           </thead>
 
@@ -304,6 +366,7 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
               label="Entertainment"
               color="var(--color-entertainment)"
               actual={fy25Actual.entertainment}
+              prior={PRIOR_FY26_FORECAST.entertainment}
               fy26={fy26.entertainment}
               fy27={fy27.entertainment}
               fy28={fy28.entertainment}
@@ -315,6 +378,7 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
               label="Sports"
               color="var(--color-sports)"
               actual={fy25Actual.sports}
+              prior={PRIOR_FY26_FORECAST.sports}
               fy26={fy26.sports}
               fy27={fy27.sports}
               fy28={fy28.sports}
@@ -326,6 +390,7 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
               label="Experiences"
               color="var(--color-experiences)"
               actual={fy25Actual.experiences}
+              prior={PRIOR_FY26_FORECAST.experiences}
               fy26={fy26.experiences}
               fy27={fy27.experiences}
               fy28={fy28.experiences}
@@ -340,6 +405,14 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
                 formatter={fmtM}
                 bold
                 topBorder
+              />
+              <PriorCell
+                value={PRIOR_FY26_FORECAST.totalSegmentOI}
+                fy25Prior={fy25Actual.totalSegmentOI}
+                formatter={fmtM}
+                bold
+                topBorder
+                showYoY
               />
               <ForecastCell
                 value={fy26.totalSegmentOI}
@@ -374,7 +447,7 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
                 label="Corporate, eliminations & below-the-line"
                 color="var(--color-text-secondary)"
               />
-              {[fy25Actual, fy26, fy27, fy28].map((yr, i) => (
+              {[fy25Actual, PRIOR_FY26_FORECAST, fy26, fy27, fy28].map((yr, i) => (
                 <td
                   key={i}
                   className="px-3 py-2 text-right tabular-nums"
@@ -382,7 +455,7 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
                     fontSize: 13,
                     color: "var(--color-text-secondary)",
                     backgroundColor:
-                      i === 1 ? "var(--color-accent-subtle)" : undefined,
+                      i === 2 ? "var(--color-accent-subtle)" : undefined,
                   }}
                 >
                   ({Math.abs(yr.belowTheLine).toLocaleString("en-US")})
@@ -398,6 +471,14 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
                 formatter={fmtM}
                 bold
                 topBorder
+              />
+              <PriorCell
+                value={PRIOR_FY26_FORECAST.netIncomeProxy}
+                fy25Prior={fy25Actual.netIncomeProxy}
+                formatter={fmtM}
+                bold
+                topBorder
+                showYoY
               />
               <ForecastCell
                 value={fy26.netIncomeProxy}
