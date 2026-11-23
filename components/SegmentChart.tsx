@@ -12,7 +12,7 @@ import {
   Legend,
 } from "recharts";
 import { DriverValues } from "@/lib/disneyData";
-import { computeFullForecast } from "@/lib/forecastMath";
+import { buildNewTableModel } from "@/lib/tableModel";
 
 interface SegmentChartProps {
   drivers: DriverValues;
@@ -115,14 +115,16 @@ function CustomLegend() {
 }
 
 export default function SegmentChart({ drivers }: SegmentChartProps) {
-  const forecast = useMemo(() => computeFullForecast(drivers), [drivers]);
+  const model = useMemo(() => buildNewTableModel(drivers), [drivers]);
 
-  // Build chart data — one entry per year, each segment's rev + OI as separate keys
+  // Build chart data — one entry per column of the New Method Segment Forecast
+  // table (Disney's new segment structure), each segment's rev + OI as
+  // separate keys
   const years = [
-    { label: "FY25", data: forecast.fy25Actual },
-    { label: "FY26 Forecast*", data: forecast.fy26 },
-    { label: "FY27 Forecast", data: forecast.fy27 },
-    { label: "FY28 Forecast", data: forecast.fy28 },
+    { label: "FY25 Actual", data: model.fy25Actual },
+    { label: "FY26 Actual", data: model.fy26Actual },
+    { label: "FY27 Forecast", data: model.fy27Forecast },
+    { label: "FY28 Forecast", data: model.fy28Forecast },
   ];
 
   const chartData = years.map(({ label, data }) => ({
@@ -156,7 +158,7 @@ export default function SegmentChart({ drivers }: SegmentChartProps) {
           Segment Revenue &amp; Operating Income
         </p>
         <p className="text-xs mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>
-          Dollars in $M · darker bar = Revenue, lighter bar = OI
+          Dollars in $M · new segment structure · darker bar = Revenue, lighter bar = OI
         </p>
       </div>
 

@@ -32,7 +32,7 @@ export default function Footer() {
             className="text-xs font-semibold"
             style={{ color: "var(--color-text-secondary)" }}
           >
-            AugieAI Execute
+            Omico Group
           </span>
           <span
             className="text-xs"
