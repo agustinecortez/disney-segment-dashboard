@@ -5,9 +5,10 @@ export const metadata: Metadata = {
   title: "Disney Segment Forecast Dashboard — Omico Group",
   description:
     "Driver-based segment forecast model for The Walt Disney Company (DIS). " +
-    "Compares the final FY26 forecast with FY25 and FY26 actuals, and lets you adjust twelve " +
-    "operational drivers to model FY26 revenue, operating income, and net income across " +
-    "Entertainment, Sports, and Experiences segments.",
+    "Old Method: the final FY26 forecast against FY25 and FY26 actuals. New Method: Disney's " +
+    "new segment structure, with twelve adjustable drivers projecting FY27 and FY28 revenue, " +
+    "operating income, and net income for Entertainment, Sports, and Experiences against " +
+    "Disney's FY27 guidance.",
 };
 
 export default function RootLayout({

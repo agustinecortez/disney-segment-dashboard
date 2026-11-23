@@ -9,6 +9,39 @@ interface AboutCardProps {
   onClose: () => void;
 }
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className="text-xs font-semibold uppercase tracking-wider mb-2"
+      style={{ color: "var(--color-text-tertiary)" }}
+    >
+      {children}
+    </p>
+  );
+}
+
+function NoteSection({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="mt-2 pt-3 border-t" style={{ borderColor: "var(--color-border)" }}>
+      <SectionLabel>{title}</SectionLabel>
+      <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-primary)" }}>
+        {text}
+      </p>
+    </div>
+  );
+}
+
+function Item({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <li>
+      <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
+        {label}
+      </span>{" "}
+      {children}
+    </li>
+  );
+}
+
 export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
   // Close on Escape key
   const handleKeyDown = useCallback(
@@ -131,103 +164,29 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
             </p>
           ))}
 
-          {/* FY26 forecast vs. actual — how the final (August 2026) forecast
-              compared with Disney's reported FY26 results. Rendered as its
-              own visually separated section so it does not merge into the
-              credibility narrative above. */}
-          <div
-            className="mt-2 pt-3 border-t"
-            style={{ borderColor: "var(--color-border)" }}
-          >
-            <p
-              className="text-xs font-semibold uppercase tracking-wider mb-2"
-              style={{ color: "var(--color-text-tertiary)" }}
-            >
-              FY26 Forecast vs. Actual
-            </p>
-            <p
-              className="text-sm leading-relaxed"
-              style={{ color: "var(--color-text-primary)" }}
-            >
-              {DISNEY_CONFIG.methodologyNote}
-            </p>
-          </div>
+          {/* New Method note — how FY27–FY28 are built (docs/v3_spec.md). */}
+          <NoteSection title="New Method (FY27–FY28)" text={DISNEY_CONFIG.newMethodNote} />
+
+          {/* Old Method note — how the final (August 2026) FY26 forecast
+              compared with Disney's reported FY26 results. */}
+          <NoteSection title="Old Method: FY26 Forecast vs. Actual" text={DISNEY_CONFIG.methodologyNote} />
 
           {/* Data sourcing section */}
           <div
             className="mt-2 pt-4 border-t"
             style={{ borderColor: "var(--color-border)" }}
           >
-            <p
-              className="text-xs font-semibold uppercase tracking-wider mb-2"
-              style={{ color: "var(--color-text-tertiary)" }}
-            >
-              Data Sources
-            </p>
-            <ul
-              className="text-sm space-y-1.5"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  FY25 Actuals:
-                </span>{" "}
-                Disney Q4 FY25 Earnings Press Release, filed November 13, 2025
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  FY25 10-K:
-                </span>{" "}
-                The Walt Disney Company Annual Report on Form 10-K, fiscal year ended September 27, 2025
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  Q1 FY26 Actuals:
-                </span>{" "}
-                Disney Q1 FY26 Earnings Press Release, filed February 2, 2026 (fiscal quarter ended December 27, 2025)
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  Q2 FY26 Actuals:
-                </span>{" "}
-                Disney Q2 FY26 Earnings Press Release, filed May 6, 2026 (fiscal quarter ended March 28, 2026)
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  Q3 FY26 Actuals:
-                </span>{" "}
-                Disney Q3 FY26 Earnings Press Release, filed August 5, 2026 (fiscal quarter ended June 27, 2026)
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  FY26 Actuals:
-                </span>{" "}
-                Disney Q4 FY26 Earnings Release, filed November 17, 2026
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  FY26 10-K:
-                </span>{" "}
-                The Walt Disney Company Annual Report on Form 10-K, fiscal year ended October 3, 2026
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  Segment cost lines and equity income:
-                </span>{" "}
-                Segment information note in the FY25 and FY26 Forms 10-K
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  Line-of-business splits:
-                </span>{" "}
-                Derived from management commentary and analyst estimates where Disney does not separately disclose (e.g., cruise line revenue)
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  Peer references in tooltips:
-                </span>{" "}
-                Publicly reported subscriber and pricing data for Netflix, Max, Paramount+ as of calendar 2025
-              </li>
+            <SectionLabel>Data Sources</SectionLabel>
+            <ul className="text-sm space-y-1.5" style={{ color: "var(--color-text-secondary)" }}>
+              <Item label="FY25 Actuals:">Disney Q4 FY25 Earnings Press Release, filed November 13, 2025</Item>
+              <Item label="FY25 10-K:">The Walt Disney Company Annual Report on Form 10-K, fiscal year ended September 27, 2025</Item>
+              <Item label="Q1–Q3 FY26 Actuals:">Disney earnings releases filed February 2, May 6, and August 5, 2026 — evidence for the final FY26 forecast</Item>
+              <Item label="FY26 Actuals:">Disney Q4 FY26 Earnings Release, filed November 17, 2026</Item>
+              <Item label="FY26 10-K:">The Walt Disney Company Annual Report on Form 10-K, fiscal year ended October 3, 2026</Item>
+              <Item label="Restated FY25–FY26 segments:">Disney Form 8-K supplemental segment information, November 17, 2026 (new segment structure)</Item>
+              <Item label="FY27 guidance:">Disney Q4 FY26 Earnings Release and earnings call, November 17, 2026</Item>
+              <Item label="Segment cost lines and equity income:">Segment information note in the FY25 and FY26 Forms 10-K (Old Method); Form 8-K supplemental segment information (New Method)</Item>
+              <Item label="Driver evidence in tooltips:">Disney+ and Hulu U.S. price changes (September 2026), Fubo and Hulu + Live TV combination (October 29, 2025), Disney Cruise Line fleet announcements, Q4 FY26 earnings call</Item>
             </ul>
           </div>
 
@@ -236,46 +195,25 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
             className="pt-3 border-t"
             style={{ borderColor: "var(--color-border)" }}
           >
-            <p
-              className="text-xs font-semibold uppercase tracking-wider mb-2"
-              style={{ color: "var(--color-text-tertiary)" }}
-            >
-              Key Forecast Assumptions
-            </p>
-            <ul
-              className="text-sm space-y-1.5"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  Below-the-line:
-                </span>{" "}
-                Fixed at the FY25 amount of ($5,147M) for the FY26 forecast — includes corporate costs, interest, tax, and minority interests. This simplification avoids modeling tax rate variation, which adds complexity without proportional value. Actual columns show the amount as reported.
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  FX assumption:
-                </span>{" "}
-                Neutral (0% impact) across all segments, per management commentary.
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  53rd fiscal week:
-                </span>{" "}
-                A +2% revenue benefit applied to FY26 only, reflecting Disney's fiscal calendar.
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  Forecast cost lines and equity income:
-                </span>{" "}
-                The model forecasts total Costs and Expenses for each segment, not individual cost lines. In the forecast column, the total is split across Disney&apos;s reported cost lines using their FY25 shares, and equity income from investees is held at the FY25 level.
-              </li>
-              <li>
-                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
-                  Content & Consumer Products growth:
-                </span>{" "}
-                Hardcoded at +5% and +3% respectively — not exposed as user drivers, as these lines are less sensitive to near-term operational decisions.
-              </li>
+            <SectionLabel>Key Forecast Assumptions — New Method (FY27–FY28)</SectionLabel>
+            <ul className="text-sm space-y-1.5" style={{ color: "var(--color-text-secondary)" }}>
+              <Item label="Guidance anchoring:">Revenue and cost drivers come from FY26 actuals and recent disclosures; the three margin drivers default to the low end of Disney&apos;s FY27 guidance for each segment.</Item>
+              <Item label="53rd fiscal week:">Removed from the FY26 base before growth is applied, using Disney&apos;s segment estimates; the Consumer Products share of the Experiences estimate is moved to Entertainment (an estimate).</Item>
+              <Item label="Cruise revenue:">Estimated at $4.5B in FY26 inside Experiences Domestic; Disney does not disclose it (a UK filing showed about $3.0B for FY25).</Item>
+              <Item label="Content and IP; Sports other:">Content and IP revenue grows a fixed +5% a year; Sports other revenue is held flat.</Item>
+              <Item label="Forecast cost lines and equity income:">Total Costs and Expenses is split across Disney&apos;s restated cost lines using FY26 shares; Sports equity income is held at the FY26 level.</Item>
+              <Item label="Below-the-line:">Corporate costs, interest, India joint venture loss and minority interests at FY26 levels; acquisition amortization of about $1.2B and a 22% tax rate per Disney&apos;s FY27 guidance; no restructuring charges.</Item>
+              <Item label="FX assumption:">Neutral (0% impact) across all segments.</Item>
+            </ul>
+
+            <div className="mt-3">
+              <SectionLabel>Key Forecast Assumptions — Old Method (final FY26 forecast)</SectionLabel>
+            </div>
+            <ul className="text-sm space-y-1.5" style={{ color: "var(--color-text-secondary)" }}>
+              <Item label="Below-the-line:">Fixed at the FY25 amount of ($5,147M) for the FY26 forecast — includes corporate costs, interest, tax, and minority interests. Actual columns show the amount as reported.</Item>
+              <Item label="53rd fiscal week:">A +2% revenue benefit applied to FY26, reflecting Disney&apos;s fiscal calendar.</Item>
+              <Item label="Forecast cost lines and equity income:">The forecast total Costs and Expenses is split across Disney&apos;s reported cost lines using their FY25 shares, and equity income from investees is held at the FY25 level.</Item>
+              <Item label="Content & Consumer Products growth:">Hardcoded at +5% and +3% respectively.</Item>
             </ul>
           </div>
         </div>

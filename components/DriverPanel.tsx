@@ -101,7 +101,7 @@ export default function DriverPanel({ drivers, onChange }: DriverPanelProps) {
           className="text-xs mt-0.5"
           style={{ color: "var(--color-text-tertiary)" }}
         >
-          12 drivers · 3 segments
+          12 drivers · 3 segments · FY27–FY28
         </p>
       </div>
 

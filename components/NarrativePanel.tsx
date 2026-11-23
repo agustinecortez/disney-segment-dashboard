@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { DriverValues } from "@/lib/disneyData";
-import { computeFullForecast } from "@/lib/forecastMath";
-import { generateNarrative } from "@/lib/narrativeLogic";
+import { computeNewForecast } from "@/lib/forecastMath";
+import { classifyTone, fy27TotalGrowth, generateNarrative } from "@/lib/narrativeLogic";
 
 interface NarrativePanelProps {
   drivers: DriverValues;
@@ -22,34 +22,34 @@ function Paragraph({ text }: { text: string }) {
 }
 
 export default function NarrativePanel({ drivers }: NarrativePanelProps) {
-  const forecast = useMemo(() => computeFullForecast(drivers), [drivers]);
+  const forecast = useMemo(() => computeNewForecast(drivers), [drivers]);
   const narrative = useMemo(
     () => generateNarrative(drivers, forecast),
     [drivers, forecast]
   );
 
-  // Derive tone label and color for the scenario badge
-  const fy25SOI = forecast.fy25Actual.totalSegmentOI;
-  const fy26SOI = forecast.fy26.totalSegmentOI;
-  const fy26Growth = ((fy26SOI - fy25SOI) / Math.abs(fy25SOI)) * 100;
+  // Derive tone label and color for the scenario badge (FY27 Total Segment OI
+  // growth vs. FY26 excluding the 53rd week — Disney's guidance basis)
+  const fy27Growth = fy27TotalGrowth(forecast);
+  const tone = classifyTone(fy27Growth);
 
   type ToneMeta = { label: string; bg: string; text: string; border: string };
   let toneMeta: ToneMeta;
-  if (fy26Growth >= 15) {
+  if (tone === "aggressive") {
     toneMeta = {
       label: "Aggressive scenario",
       bg: "#EFF8F3",
       text: "var(--color-positive)",
       border: "#BBE0CC",
     };
-  } else if (fy26Growth >= 5) {
+  } else if (tone === "in-line") {
     toneMeta = {
       label: "In-line with guidance",
       bg: "var(--color-accent-subtle)",
       text: "var(--color-accent)",
       border: "#E0C98A",
     };
-  } else if (fy26Growth >= 0) {
+  } else if (tone === "conservative") {
     toneMeta = {
       label: "Conservative scenario",
       bg: "#F4F4F0",
@@ -83,7 +83,7 @@ export default function NarrativePanel({ drivers }: NarrativePanelProps) {
             className="text-xs mt-0.5"
             style={{ color: "var(--color-text-tertiary)" }}
           >
-            Narrative adapts as you adjust drivers
+            FY27 against Disney&apos;s guidance · adapts as you adjust drivers
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export default function NarrativePanel({ drivers }: NarrativePanelProps) {
             className="tabular-nums font-normal"
             style={{ color: toneMeta.text, opacity: 0.8 }}
           >
-            FY26 SOI {fy26Growth >= 0 ? "+" : ""}{fy26Growth.toFixed(1)}%
+            FY27 SOI {fy27Growth >= 0 ? "+" : ""}{fy27Growth.toFixed(1)}%
           </span>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function NarrativePanel({ drivers }: NarrativePanelProps) {
               className="text-xs font-semibold uppercase tracking-wider mb-2"
               style={{ color: "var(--color-accent)" }}
             >
-              Off-consensus note
+              Off-guidance note
             </p>
             <Paragraph text={narrative.editorialFrame} />
           </div>

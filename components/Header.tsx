@@ -1,44 +1,45 @@
 "use client";
 
-// Placeholder — full implementation in Step 10 (About modal wired up)
-// This skeleton establishes the header slot in the layout.
-
 interface HeaderProps {
+  title: string;
+  badge: string;
+  showReset: boolean;
   onAboutOpen: () => void;
   onReset: () => void;
 }
 
-export default function Header({ onAboutOpen, onReset }: HeaderProps) {
+export default function Header({ title, badge, showReset, onAboutOpen, onReset }: HeaderProps) {
   return (
     <header
-      className="sticky top-0 z-40 w-full border-b flex items-center justify-between px-6"
+      className="sticky top-0 z-40 w-full border-b flex items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:h-16 lg:py-0"
       style={{
-        height: 64,
+        minHeight: 64,
         backgroundColor: "var(--color-primary)",
         borderColor: "var(--color-primary-hover)",
       }}
     >
-      {/* Left — title */}
-      <div className="flex items-center gap-3">
+      {/* Left — title. On phones the title wraps and the badge is hidden so
+          the action buttons stay on screen. */}
+      <div className="flex items-center gap-3 min-w-0">
         <span
-          className="font-semibold tracking-tight"
-          style={{ fontSize: 20, color: "#ffffff" }}
+          className="font-semibold tracking-tight text-base leading-tight sm:text-xl"
+          style={{ color: "#ffffff" }}
         >
-          Disney Segment Forecast Dashboard
+          {title}
         </span>
         <span
-          className="text-xs px-2 py-0.5 rounded font-medium"
+          className="hidden md:inline text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap"
           style={{
             backgroundColor: "rgba(255,255,255,0.15)",
             color: "rgba(255,255,255,0.75)",
           }}
         >
-          DIS · FY25 and FY26 Actual + FY26 Forecast
+          {badge}
         </span>
       </div>
 
       {/* Right — actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <button
           onClick={onAboutOpen}
           className="text-sm px-3 py-1.5 rounded transition-colors"
@@ -75,6 +76,7 @@ export default function Header({ onAboutOpen, onReset }: HeaderProps) {
           GitHub
         </a>
 
+        {showReset && (
         <button
           onClick={onReset}
           className="text-sm px-3 py-1.5 rounded transition-colors font-medium"
@@ -91,6 +93,7 @@ export default function Header({ onAboutOpen, onReset }: HeaderProps) {
         >
           Reset
         </button>
+        )}
       </div>
     </header>
   );

@@ -12,7 +12,7 @@ import {
   ReferenceLine,
   Cell,
 } from "recharts";
-import { DriverValues, getDefaultDriverValues } from "@/lib/disneyData";
+import { DriverValues } from "@/lib/disneyData";
 import { computeTornadoBars, TornadoBar } from "@/lib/forecastMath";
 
 interface TornadoChartProps {
@@ -29,9 +29,9 @@ function fmtDelta(value: number): string {
 // Shorten driver labels so they fit on the Y-axis
 function shortLabel(label: string): string {
   const map: Record<string, string> = {
-    "DTC Subscriber Growth": "DTC Sub Growth",
-    "DTC ARPU Growth": "DTC ARPU",
-    "Linear Networks Revenue Decline": "Linear Decline",
+    "SVOD Subscriber Growth": "SVOD Subs",
+    "SVOD Revenue per Subscriber Growth": "SVOD Rev/Sub",
+    "Networks and vMVPD Revenue Growth": "Networks & vMVPD",
     "Entertainment Operating Margin": "Ent. Margin",
     "ESPN Affiliate/Subscription Revenue Growth": "ESPN Affiliate",
     "Sports Advertising Revenue Growth": "Sports Advertising",
@@ -143,10 +143,10 @@ export default function TornadoChart({ drivers }: TornadoChartProps) {
         style={{ borderColor: "var(--color-border)" }}
       >
         <p className="font-semibold text-sm" style={{ color: "var(--color-text-primary)" }}>
-          FY26 OI Sensitivity
+          FY27 OI Sensitivity
         </p>
         <p className="text-xs mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>
-          Impact on FY26 Total Segment OI of ±10% relative shift per driver · sorted by total swing
+          Impact on FY27 Total Segment OI of ±10% relative shift per driver · sorted by total swing
         </p>
       </div>
 
