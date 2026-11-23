@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Disney Segment Forecast Dashboard — AugieAI Execute",
+  title: "Disney Segment Forecast Dashboard — Omico Group",
   description:
     "Driver-based segment forecast model for The Walt Disney Company (DIS). " +
-    "Adjust twelve operational drivers to project FY26–FY28 revenue, operating income, " +
-    "and net income across Entertainment, Sports, and Experiences segments.",
+    "Compares the final FY26 forecast with FY25 and FY26 actuals, and lets you adjust twelve " +
+    "operational drivers to model FY26 revenue, operating income, and net income across " +
+    "Entertainment, Sports, and Experiences segments.",
 };
 
 export default function RootLayout({

@@ -36,25 +36,23 @@ function fmtB(value: number): string {
 function buildHeadline(
   tone: HeadlineTone,
   fy26Growth: number,
-  fy26SOI: number,
-  fy28SOI: number
+  fy26SOI: number
 ): string {
   const growthStr = pct(fy26Growth);
   const soiStr = fmtB(fy26SOI);
-  const fy28Str = fmtB(fy28SOI);
 
   switch (tone) {
     case "aggressive":
-      return `At current driver assumptions, this scenario projects FY26 Total Segment Operating Income of approximately ${soiStr}, representing ${growthStr} growth over FY25 — well above the high end of Disney's stated FY26 guidance range. This is an optimistic scenario that assumes a combination of DTC subscriber acceleration, strong per-capita spending at the parks, and margin expansion across all three segments simultaneously. If sustained, the three-year path reaches approximately ${fy28Str} in Total Segment OI by FY28.`;
+      return `At current driver assumptions, this scenario projects FY26 Total Segment Operating Income of approximately ${soiStr}, representing ${growthStr} growth over FY25 — well above the high end of Disney's stated FY26 guidance range. This is an optimistic scenario that assumes a combination of DTC subscriber acceleration, strong per-capita spending at the parks, and margin expansion across all three segments simultaneously.`;
 
     case "in-line":
-      return `At current driver assumptions, this scenario projects FY26 Total Segment Operating Income of approximately ${soiStr}, representing ${growthStr} growth over FY25 — broadly in line with Disney's stated FY26 guidance (double-digit adjusted EPS growth implies comparable Total Segment OI growth). Default assumptions align with management's own disclosed outlook: DTC margin expansion, modest ESPN affiliate stabilization, and Experiences growth driven by cruise fleet expansion. If momentum is maintained, the three-year path reaches approximately ${fy28Str} in Total Segment OI by FY28.`;
+      return `At current driver assumptions, this scenario projects FY26 Total Segment Operating Income of approximately ${soiStr}, representing ${growthStr} growth over FY25 — broadly in line with Disney's stated FY26 guidance (double-digit adjusted EPS growth implies comparable Total Segment OI growth).`;
 
     case "conservative":
-      return `At current driver assumptions, this scenario projects FY26 Total Segment Operating Income of approximately ${soiStr}, representing ${growthStr} growth over FY25 — at or below the low end of Disney's guidance range. This scenario reflects a more cautious view: slower DTC subscriber or ARPU growth, more modest Experiences contribution, or margin pressure that offsets revenue gains. Disney would still be generating significant operating income, but below management's stated ambitions. The three-year path reaches approximately ${fy28Str} in Total Segment OI by FY28.`;
+      return `At current driver assumptions, this scenario projects FY26 Total Segment Operating Income of approximately ${soiStr}, representing ${growthStr} growth over FY25 — at or below the low end of Disney's guidance range. This scenario reflects a more cautious view: slower DTC subscriber or ARPU growth, more modest Experiences contribution, or margin pressure that offsets revenue gains. Disney would still be generating significant operating income, but below management's stated ambitions.`;
 
     case "contractionary":
-      return `At current driver assumptions, this scenario projects FY26 Total Segment Operating Income of approximately ${soiStr} — implying year-over-year contraction of ${Math.abs(fy26Growth).toFixed(1)}% versus FY25's ${fmtB(17551)} base. This is a stress scenario that would materially miss Disney's own FY26 guidance. Sustained contraction at this level would likely trigger significant management action — further cost restructuring, content spend moderation, or strategic portfolio changes. The three-year path reaches approximately ${fy28Str} in Total Segment OI by FY28 under these assumptions.`;
+      return `At current driver assumptions, this scenario projects FY26 Total Segment Operating Income of approximately ${soiStr} — implying year-over-year contraction of ${Math.abs(fy26Growth).toFixed(1)}% versus FY25's ${fmtB(17551)} base. This is a stress scenario that would materially miss Disney's own FY26 guidance. Sustained contraction at this level would likely trigger significant management action — further cost restructuring, content spend moderation, or strategic portfolio changes.`;
   }
 }
 
@@ -148,7 +146,6 @@ export function generateNarrative(
 ): NarrativeOutput {
   const fy25SOI = forecast.fy25Actual.totalSegmentOI; // 17,551
   const fy26SOI = forecast.fy26.totalSegmentOI;
-  const fy28SOI = forecast.fy28.totalSegmentOI;
   const fy26Growth = ((fy26SOI - fy25SOI) / Math.abs(fy25SOI)) * 100;
 
   // ── Tone classification (spec Section 9) ──────────────────────────────────
@@ -184,7 +181,7 @@ export function generateNarrative(
     isOffConsensus && (tone === "aggressive" || tone === "contractionary");
 
   return {
-    headline: buildHeadline(tone, fy26Growth, fy26SOI, fy28SOI),
+    headline: buildHeadline(tone, fy26Growth, fy26SOI),
     segmentCallout: buildSegmentCallout(leadSegment, drivers, forecast),
     riskWatch: buildRiskWatch(tone, drivers, forecast),
     editorialFrame: showEditorial

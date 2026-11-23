@@ -12,7 +12,7 @@ import {
   Legend,
 } from "recharts";
 import { DriverValues } from "@/lib/disneyData";
-import { computeFullForecast } from "@/lib/forecastMath";
+import { buildTableModel } from "@/lib/tableModel";
 
 interface SegmentChartProps {
   drivers: DriverValues;
@@ -115,14 +115,14 @@ function CustomLegend() {
 }
 
 export default function SegmentChart({ drivers }: SegmentChartProps) {
-  const forecast = useMemo(() => computeFullForecast(drivers), [drivers]);
+  const model = useMemo(() => buildTableModel(drivers), [drivers]);
 
-  // Build chart data — one entry per year, each segment's rev + OI as separate keys
+  // Build chart data — one entry per column of the Segment Forecast table,
+  // each segment's rev + OI as separate keys
   const years = [
-    { label: "FY25", data: forecast.fy25Actual },
-    { label: "FY26 Forecast*", data: forecast.fy26 },
-    { label: "FY27 Forecast", data: forecast.fy27 },
-    { label: "FY28 Forecast", data: forecast.fy28 },
+    { label: "FY25 Actual", data: model.fy25Actual },
+    { label: "FY26 Actual", data: model.fy26Actual },
+    { label: "FY26 Forecast*", data: model.fy26Forecast },
   ];
 
   const chartData = years.map(({ label, data }) => ({

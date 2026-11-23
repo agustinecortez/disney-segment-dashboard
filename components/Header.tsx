@@ -33,7 +33,7 @@ export default function Header({ onAboutOpen, onReset }: HeaderProps) {
             color: "rgba(255,255,255,0.75)",
           }}
         >
-          DIS · FY25 Actual + FY26–FY28 Forecast
+          DIS · FY25 and FY26 Actual + FY26 Forecast
         </span>
       </div>
 

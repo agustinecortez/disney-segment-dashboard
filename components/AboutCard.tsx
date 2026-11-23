@@ -74,7 +74,7 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
               About this dashboard
             </h2>
             <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>
-              Disney Segment Forecast Dashboard · AugieAI Execute
+              Disney Segment Forecast Dashboard · Omico Group
             </p>
           </div>
           <button
@@ -131,11 +131,10 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
             </p>
           ))}
 
-          {/* Methodology note (v2) — disclosure of the actuals-based margin
-              trajectory driving default-state OI above Disney's blended
-              actual-plus-Q4-guide outlook. Rendered as its own visually
-              separated section so it does not merge into the credibility
-              narrative above. */}
+          {/* FY26 forecast vs. actual — how the final (August 2026) forecast
+              compared with Disney's reported FY26 results. Rendered as its
+              own visually separated section so it does not merge into the
+              credibility narrative above. */}
           <div
             className="mt-2 pt-3 border-t"
             style={{ borderColor: "var(--color-border)" }}
@@ -144,7 +143,7 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
               className="text-xs font-semibold uppercase tracking-wider mb-2"
               style={{ color: "var(--color-text-tertiary)" }}
             >
-              Methodology Note (v2)
+              FY26 Forecast vs. Actual
             </p>
             <p
               className="text-sm leading-relaxed"
@@ -201,6 +200,24 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
               </li>
               <li>
                 <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  FY26 Actuals:
+                </span>{" "}
+                Disney Q4 FY26 Earnings Release, filed November 17, 2026
+              </li>
+              <li>
+                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  FY26 10-K:
+                </span>{" "}
+                The Walt Disney Company Annual Report on Form 10-K, fiscal year ended October 3, 2026
+              </li>
+              <li>
+                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  Segment cost lines and equity income:
+                </span>{" "}
+                Segment information note in the FY25 and FY26 Forms 10-K
+              </li>
+              <li>
+                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
                   Line-of-business splits:
                 </span>{" "}
                 Derived from management commentary and analyst estimates where Disney does not separately disclose (e.g., cruise line revenue)
@@ -233,19 +250,25 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
                 <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
                   Below-the-line:
                 </span>{" "}
-                Fixed at ($5,147M) for all forecast years — includes corporate costs, interest, tax, and minority interests. This simplification avoids modeling tax rate variation, which adds complexity without proportional value.
+                Fixed at the FY25 amount of ($5,147M) for the FY26 forecast — includes corporate costs, interest, tax, and minority interests. This simplification avoids modeling tax rate variation, which adds complexity without proportional value. Actual columns show the amount as reported.
               </li>
               <li>
                 <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
                   FX assumption:
                 </span>{" "}
-                Neutral (0% impact) across all segments and years, per management commentary.
+                Neutral (0% impact) across all segments, per management commentary.
               </li>
               <li>
                 <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
                   53rd fiscal week:
                 </span>{" "}
-                A +2% revenue benefit applied to FY26 only, reflecting Disney's fiscal calendar. Not applicable to FY27 or FY28.
+                A +2% revenue benefit applied to FY26 only, reflecting Disney's fiscal calendar.
+              </li>
+              <li>
+                <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  Forecast cost lines and equity income:
+                </span>{" "}
+                The model forecasts total Costs and Expenses for each segment, not individual cost lines. In the forecast column, the total is split across Disney&apos;s reported cost lines using their FY25 shares, and equity income from investees is held at the FY25 level.
               </li>
               <li>
                 <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>
@@ -268,7 +291,7 @@ export default function AboutCard({ isOpen, onClose }: AboutCardProps) {
           <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
             Built by{" "}
             <span className="font-semibold" style={{ color: "var(--color-text-secondary)" }}>
-              AugieAI Execute
+              Omico Group
             </span>
             {" "}· Educational and methodology demonstration purposes only
           </p>

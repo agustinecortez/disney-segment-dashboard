@@ -1,17 +1,25 @@
 "use client";
 
 import { useMemo } from "react";
-import { DriverValues, PRIOR_FY26_FORECAST, PriorSegmentForecast } from "@/lib/disneyData";
-import { computeFullForecast, FullForecast, SegmentForecast } from "@/lib/forecastMath";
+import { DISNEY_CONFIG, DriverValues, SegmentKey } from "@/lib/disneyData";
+import { buildTableModel, SegmentColumn, TableModel } from "@/lib/tableModel";
 
 interface ForecastTableProps {
   drivers: DriverValues;
 }
 
+// Column order: FY25 Actual, FY26 Actual, FY26 Forecast (spec: docs/v2_1_spec.md)
+type ColumnKey = keyof TableModel;
+const COLUMNS: ColumnKey[] = ["fy25Actual", "fy26Actual", "fy26Forecast"];
+
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
 function fmtM(value: number): string {
   return Math.round(value).toLocaleString("en-US");
+}
+
+function fmtNeg(value: number): string {
+  return `(${fmtM(Math.abs(value))})`;
 }
 
 function fmtPct(value: number): string {
@@ -45,23 +53,15 @@ function YoYBadge({ current, prior }: { current: number; prior: number }) {
 function ColHeader({
   label,
   variant,
-  hasFiftyThird,
+  marker,
   tooltip,
 }: {
   label: string;
-  variant: "actual" | "prior" | "forecast";
-  hasFiftyThird?: boolean;
+  variant: "actual" | "forecast";
+  marker?: string;
   tooltip?: string;
 }) {
-  // Prior column reads as historical/frozen: desaturated navy at 65% opacity,
-  // sitting between the solid navy of FY25 Actual and the accent-gold of the
-  // live forecast columns.
-  const bg =
-    variant === "forecast"
-      ? "var(--color-accent)"
-      : variant === "prior"
-        ? "rgba(30, 58, 95, 0.65)" // var(--color-primary) at 65% opacity
-        : "var(--color-primary)";
+  const bg = variant === "forecast" ? "var(--color-accent)" : "var(--color-primary)";
   const fg = variant === "forecast" ? "var(--color-primary)" : "#ffffff";
 
   return (
@@ -75,13 +75,9 @@ function ColHeader({
       }}
     >
       {label}
-      {hasFiftyThird && (
-        <span
-          className="ml-1"
-          title="FY26 includes an estimated +2% benefit from a 53rd fiscal week"
-          style={{ color: fg, opacity: 0.75 }}
-        >
-          *
+      {marker && (
+        <span className="ml-0.5" style={{ color: fg, opacity: 0.75 }}>
+          {marker}
         </span>
       )}
     </th>
@@ -91,97 +87,75 @@ function ColHeader({
 // Row label cell
 function RowLabel({
   label,
-  indent,
+  indent = 0,
   bold,
   topBorder,
   color,
 }: {
   label: string;
-  indent?: boolean;
+  indent?: 0 | 1 | 2;
   bold?: boolean;
-  topBorder?: boolean;
+  topBorder?: string;
   color?: string;
 }) {
   return (
     <td
-      className="px-3 py-2 text-left whitespace-nowrap"
+      className="px-3 py-2 text-left"
       style={{
         fontSize: 13,
         fontWeight: bold ? 600 : 400,
-        paddingLeft: indent ? 24 : 12,
+        paddingLeft: [12, 24, 40][indent],
         color: color ?? "var(--color-text-primary)",
-        borderTop: topBorder ? "2px solid var(--color-border-strong)" : undefined,
+        borderTop: topBorder,
         position: "sticky",
         left: 0,
         backgroundColor: "var(--color-bg-card)",
         zIndex: 1,
       }}
     >
-      {label}
+      {/* Long cost-line labels wrap on phones so the sticky label column
+          stays ~200px wide, leaving room to swipe through the figures. */}
+      <div className="max-w-[170px] whitespace-normal leading-snug lg:max-w-none lg:whitespace-nowrap">
+        {label}
+      </div>
     </td>
   );
 }
 
-// Data cell — actual (FY25) column
-function ActualCell({
-  value,
-  formatter,
-  bold,
-  topBorder,
-}: {
-  value: number;
-  formatter: (v: number) => string;
-  bold?: boolean;
-  topBorder?: boolean;
-}) {
-  return (
-    <td
-      className="px-3 py-2 text-right tabular-nums"
-      style={{
-        fontSize: 13,
-        fontWeight: bold ? 600 : 400,
-        color: "var(--color-text-secondary)",
-        borderTop: topBorder ? "2px solid var(--color-border-strong)" : undefined,
-      }}
-    >
-      {formatter(value)}
-    </td>
-  );
-}
-
-// Data cell — forecast column (with YoY badge)
-function ForecastCell({
+// Data cell. Actual columns read muted; the forecast column keeps the
+// accent tint and primary text. Growth badges render only where `prior` is set.
+function DataCell({
+  column,
+  text,
   value,
   prior,
-  formatter,
   bold,
   topBorder,
-  showYoY,
-  isFiftyThirdYear,
+  muted,
 }: {
-  value: number;
-  prior: number;
-  formatter: (v: number) => string;
+  column: ColumnKey;
+  text: string;
+  value?: number;
+  prior?: number;
   bold?: boolean;
-  topBorder?: boolean;
-  showYoY?: boolean;
-  isFiftyThirdYear?: boolean;
+  topBorder?: string;
+  muted?: boolean;
 }) {
+  const isForecast = column === "fy26Forecast";
   return (
     <td
       className="px-3 py-2 text-right tabular-nums"
       style={{
         fontSize: 13,
         fontWeight: bold ? 600 : 400,
-        color: "var(--color-text-primary)",
-        backgroundColor: isFiftyThirdYear
-          ? "var(--color-accent-subtle)"
-          : undefined,
-        borderTop: topBorder ? "2px solid var(--color-border-strong)" : undefined,
+        color:
+          isForecast && !muted ? "var(--color-text-primary)" : "var(--color-text-secondary)",
+        backgroundColor: isForecast ? "var(--color-accent-subtle)" : undefined,
+        borderTop: topBorder,
       }}
     >
-      <div>{formatter(value)}</div>
-      {showYoY && (
+      <div>{text}</div>
+      {value !== undefined && prior !== undefined && (
         <div className="mt-0.5">
           <YoYBadge current={value} prior={prior} />
         </div>
@@ -190,110 +164,123 @@ function ForecastCell({
   );
 }
 
-// Data cell — Prior FY26 Forecast column (frozen v1 snapshot, muted styling,
-// YoY chip computed against FY25 Actual so the growth rate lines up next to
-// the live FY26 Forecast column's chip for direct visual comparison).
-function PriorCell({
-  value,
-  fy25Prior,
-  formatter,
-  bold,
-  topBorder,
-  showYoY,
-}: {
-  value: number;
-  fy25Prior: number;
-  formatter: (v: number) => string;
-  bold?: boolean;
-  topBorder?: boolean;
-  showYoY?: boolean;
-}) {
-  return (
-    <td
-      className="px-3 py-2 text-right tabular-nums"
-      style={{
-        fontSize: 13,
-        fontWeight: bold ? 600 : 400,
-        color: "var(--color-text-secondary)",
-        borderTop: topBorder ? "2px solid var(--color-border-strong)" : undefined,
-      }}
-    >
-      <div>{formatter(value)}</div>
-      {showYoY && (
-        <div className="mt-0.5">
-          <YoYBadge current={value} prior={fy25Prior} />
-        </div>
-      )}
-    </td>
-  );
+// Growth badges appear under FY26 Actual only, measured against FY25 Actual.
+function growthPrior(column: ColumnKey, fy25Value: number): number | undefined {
+  return column === "fy26Actual" ? fy25Value : undefined;
 }
+
+const RULE_LIGHT = "1px solid var(--color-border)";
+const RULE_SUBTOTAL = "1px solid var(--color-border-strong)";
+const RULE_TOTAL = "2px solid var(--color-border-strong)";
 
 // ── Segment block rows ────────────────────────────────────────────────────────
 
 function SegmentRows({
-  label,
+  segmentKey,
   color,
-  actual,
-  prior,
-  fy26,
-  fy27,
-  fy28,
-  fy25Actual,
+  model,
 }: {
-  label: string;
+  segmentKey: SegmentKey;
   color: string;
-  actual: SegmentForecast;
-  prior: PriorSegmentForecast;
-  fy26: SegmentForecast;
-  fy27: SegmentForecast;
-  fy28: SegmentForecast;
-  fy25Actual: SegmentForecast;
+  model: TableModel;
 }) {
+  const config = DISNEY_CONFIG.segments.find((s) => s.key === segmentKey)!;
+  const cell = (column: ColumnKey): SegmentColumn => model[column][segmentKey];
+  const fy25 = cell("fy25Actual");
+
   return (
     <>
       {/* Segment sub-header */}
       <tr>
         <td
-          colSpan={6}
+          colSpan={COLUMNS.length + 1}
           className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider"
           style={{
             color,
             backgroundColor: "var(--color-bg-subtle)",
-            borderTop: "1px solid var(--color-border)",
+            borderTop: RULE_LIGHT,
           }}
         >
-          {label}
+          {config.name}
         </td>
       </tr>
 
-      {/* Revenue */}
+      {/* Revenues */}
       <tr className="hover:bg-[#FAFAF7] transition-colors">
-        <RowLabel label="Revenue" indent />
-        <ActualCell value={actual.revenue} formatter={fmtM} />
-        <PriorCell value={prior.revenue} fy25Prior={fy25Actual.revenue} formatter={fmtM} showYoY />
-        <ForecastCell value={fy26.revenue} prior={fy25Actual.revenue} formatter={fmtM} showYoY isFiftyThirdYear />
-        <ForecastCell value={fy27.revenue} prior={fy26.revenue} formatter={fmtM} showYoY />
-        <ForecastCell value={fy28.revenue} prior={fy27.revenue} formatter={fmtM} showYoY />
+        <RowLabel label="Revenues" indent={1} />
+        {COLUMNS.map((c) => (
+          <DataCell
+            key={c}
+            column={c}
+            text={fmtM(cell(c).revenue)}
+            value={cell(c).revenue}
+            prior={growthPrior(c, fy25.revenue)}
+          />
+        ))}
       </tr>
 
-      {/* Operating Income */}
+      {/* Disney's reported cost lines */}
+      {config.costLineLabels.map((label, i) => (
+        <tr key={label} className="hover:bg-[#FAFAF7] transition-colors">
+          <RowLabel label={label} indent={2} color="var(--color-text-secondary)" />
+          {COLUMNS.map((c) => (
+            <DataCell key={c} column={c} text={fmtNeg(cell(c).costLines[i])} muted />
+          ))}
+        </tr>
+      ))}
+
+      {/* Costs and Expenses */}
       <tr className="hover:bg-[#FAFAF7] transition-colors">
-        <RowLabel label="Operating Income" indent />
-        <ActualCell value={actual.operatingIncome} formatter={fmtM} />
-        <PriorCell value={prior.operatingIncome} fy25Prior={fy25Actual.operatingIncome} formatter={fmtM} showYoY />
-        <ForecastCell value={fy26.operatingIncome} prior={fy25Actual.operatingIncome} formatter={fmtM} showYoY isFiftyThirdYear />
-        <ForecastCell value={fy27.operatingIncome} prior={fy26.operatingIncome} formatter={fmtM} showYoY />
-        <ForecastCell value={fy28.operatingIncome} prior={fy27.operatingIncome} formatter={fmtM} showYoY />
+        <RowLabel label="Costs and Expenses" indent={1} topBorder={RULE_LIGHT} />
+        {COLUMNS.map((c) => (
+          <DataCell
+            key={c}
+            column={c}
+            text={fmtNeg(cell(c).costsAndExpenses)}
+            topBorder={RULE_LIGHT}
+          />
+        ))}
+      </tr>
+
+      {/* Equity income from investees */}
+      <tr className="hover:bg-[#FAFAF7] transition-colors">
+        <RowLabel label="Equity income from investees" indent={1} />
+        {COLUMNS.map((c) => (
+          <DataCell
+            key={c}
+            column={c}
+            text={cell(c).equityIncome === 0 ? "—" : fmtM(cell(c).equityIncome)}
+          />
+        ))}
+      </tr>
+
+      {/* Segment Operating Income — subtotal */}
+      <tr className="hover:bg-[#FAFAF7] transition-colors">
+        <RowLabel
+          label={`${config.name} Operating Income`}
+          indent={1}
+          bold
+          topBorder={RULE_SUBTOTAL}
+        />
+        {COLUMNS.map((c) => (
+          <DataCell
+            key={c}
+            column={c}
+            text={fmtM(cell(c).operatingIncome)}
+            value={cell(c).operatingIncome}
+            prior={growthPrior(c, fy25.operatingIncome)}
+            bold
+            topBorder={RULE_SUBTOTAL}
+          />
+        ))}
       </tr>
 
       {/* Operating Margin */}
       <tr className="hover:bg-[#FAFAF7] transition-colors">
-        <RowLabel label="Operating Margin" indent />
-        <ActualCell value={actual.operatingMargin} formatter={fmtPct} />
-        <PriorCell value={prior.operatingMargin} fy25Prior={fy25Actual.operatingMargin} formatter={fmtPct} />
-        <ForecastCell value={fy26.operatingMargin} prior={fy25Actual.operatingMargin} formatter={fmtPct} isFiftyThirdYear />
-        <ForecastCell value={fy27.operatingMargin} prior={fy26.operatingMargin} formatter={fmtPct} />
-        <ForecastCell value={fy28.operatingMargin} prior={fy27.operatingMargin} formatter={fmtPct} />
+        <RowLabel label="Operating Margin" indent={1} />
+        {COLUMNS.map((c) => (
+          <DataCell key={c} column={c} text={fmtPct(cell(c).operatingMargin)} />
+        ))}
       </tr>
     </>
   );
@@ -302,12 +289,8 @@ function SegmentRows({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function ForecastTable({ drivers }: ForecastTableProps) {
-  const forecast: FullForecast = useMemo(
-    () => computeFullForecast(drivers),
-    [drivers]
-  );
-
-  const { fy25Actual, fy26, fy27, fy28 } = forecast;
+  const model: TableModel = useMemo(() => buildTableModel(drivers), [drivers]);
+  const fy25 = model.fy25Actual;
 
   return (
     <div className="overflow-x-auto">
@@ -322,11 +305,11 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
             Segment Forecast
           </p>
           <p className="text-xs mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>
-            Dollars in $M · FY25 actual + FY26–28 forecast
+            Dollars in $M · FY25 and FY26 actual + FY26 forecast
           </p>
         </div>
         <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
-          * FY26 includes +2% 53rd-week benefit
+          * Final Forecast as of August 2026
         </p>
       </div>
 
@@ -349,96 +332,35 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
                 Line Item
               </th>
               <ColHeader label="FY25 Actual" variant="actual" />
+              <ColHeader label="FY26 Actual" variant="actual" />
               <ColHeader
-                label="Prior FY26 Forecast"
-                variant="prior"
-                tooltip="v1.0 forecast as shipped May 31, 2026, frozen for comparison. See README for context."
+                label="FY26 Forecast"
+                variant="forecast"
+                marker="*"
+                tooltip="Final forecast as of August 2026"
               />
-              <ColHeader label="FY26 Forecast" variant="forecast" hasFiftyThird />
-              <ColHeader label="FY27 Forecast" variant="forecast" />
-              <ColHeader label="FY28 Forecast" variant="forecast" />
             </tr>
           </thead>
 
           <tbody>
-            {/* Entertainment */}
-            <SegmentRows
-              label="Entertainment"
-              color="var(--color-entertainment)"
-              actual={fy25Actual.entertainment}
-              prior={PRIOR_FY26_FORECAST.entertainment}
-              fy26={fy26.entertainment}
-              fy27={fy27.entertainment}
-              fy28={fy28.entertainment}
-              fy25Actual={fy25Actual.entertainment}
-            />
-
-            {/* Sports */}
-            <SegmentRows
-              label="Sports"
-              color="var(--color-sports)"
-              actual={fy25Actual.sports}
-              prior={PRIOR_FY26_FORECAST.sports}
-              fy26={fy26.sports}
-              fy27={fy27.sports}
-              fy28={fy28.sports}
-              fy25Actual={fy25Actual.sports}
-            />
-
-            {/* Experiences */}
-            <SegmentRows
-              label="Experiences"
-              color="var(--color-experiences)"
-              actual={fy25Actual.experiences}
-              prior={PRIOR_FY26_FORECAST.experiences}
-              fy26={fy26.experiences}
-              fy27={fy27.experiences}
-              fy28={fy28.experiences}
-              fy25Actual={fy25Actual.experiences}
-            />
+            <SegmentRows segmentKey="entertainment" color="var(--color-entertainment)" model={model} />
+            <SegmentRows segmentKey="sports" color="var(--color-sports)" model={model} />
+            <SegmentRows segmentKey="experiences" color="var(--color-experiences)" model={model} />
 
             {/* ── Total Segment OI ── */}
             <tr style={{ backgroundColor: "var(--color-bg-subtle)" }}>
-              <RowLabel label="Total Segment Operating Income" bold topBorder />
-              <ActualCell
-                value={fy25Actual.totalSegmentOI}
-                formatter={fmtM}
-                bold
-                topBorder
-              />
-              <PriorCell
-                value={PRIOR_FY26_FORECAST.totalSegmentOI}
-                fy25Prior={fy25Actual.totalSegmentOI}
-                formatter={fmtM}
-                bold
-                topBorder
-                showYoY
-              />
-              <ForecastCell
-                value={fy26.totalSegmentOI}
-                prior={fy25Actual.totalSegmentOI}
-                formatter={fmtM}
-                bold
-                topBorder
-                showYoY
-                isFiftyThirdYear
-              />
-              <ForecastCell
-                value={fy27.totalSegmentOI}
-                prior={fy26.totalSegmentOI}
-                formatter={fmtM}
-                bold
-                topBorder
-                showYoY
-              />
-              <ForecastCell
-                value={fy28.totalSegmentOI}
-                prior={fy27.totalSegmentOI}
-                formatter={fmtM}
-                bold
-                topBorder
-                showYoY
-              />
+              <RowLabel label="Total Segment Operating Income" bold topBorder={RULE_TOTAL} />
+              {COLUMNS.map((c) => (
+                <DataCell
+                  key={c}
+                  column={c}
+                  text={fmtM(model[c].totalSegmentOI)}
+                  value={model[c].totalSegmentOI}
+                  prior={growthPrior(c, fy25.totalSegmentOI)}
+                  bold
+                  topBorder={RULE_TOTAL}
+                />
+              ))}
             </tr>
 
             {/* ── Corporate / below-the-line ── */}
@@ -447,64 +369,25 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
                 label="Corporate, eliminations & below-the-line"
                 color="var(--color-text-secondary)"
               />
-              {[fy25Actual, PRIOR_FY26_FORECAST, fy26, fy27, fy28].map((yr, i) => (
-                <td
-                  key={i}
-                  className="px-3 py-2 text-right tabular-nums"
-                  style={{
-                    fontSize: 13,
-                    color: "var(--color-text-secondary)",
-                    backgroundColor:
-                      i === 2 ? "var(--color-accent-subtle)" : undefined,
-                  }}
-                >
-                  ({Math.abs(yr.belowTheLine).toLocaleString("en-US")})
-                </td>
+              {COLUMNS.map((c) => (
+                <DataCell key={c} column={c} text={fmtNeg(model[c].belowTheLine)} muted />
               ))}
             </tr>
 
             {/* ── Net Income proxy ── */}
             <tr style={{ backgroundColor: "var(--color-bg-subtle)" }}>
-              <RowLabel label="Net Income to Shareholders (proxy)" bold topBorder />
-              <ActualCell
-                value={fy25Actual.netIncomeProxy}
-                formatter={fmtM}
-                bold
-                topBorder
-              />
-              <PriorCell
-                value={PRIOR_FY26_FORECAST.netIncomeProxy}
-                fy25Prior={fy25Actual.netIncomeProxy}
-                formatter={fmtM}
-                bold
-                topBorder
-                showYoY
-              />
-              <ForecastCell
-                value={fy26.netIncomeProxy}
-                prior={fy25Actual.netIncomeProxy}
-                formatter={fmtM}
-                bold
-                topBorder
-                showYoY
-                isFiftyThirdYear
-              />
-              <ForecastCell
-                value={fy27.netIncomeProxy}
-                prior={fy26.netIncomeProxy}
-                formatter={fmtM}
-                bold
-                topBorder
-                showYoY
-              />
-              <ForecastCell
-                value={fy28.netIncomeProxy}
-                prior={fy27.netIncomeProxy}
-                formatter={fmtM}
-                bold
-                topBorder
-                showYoY
-              />
+              <RowLabel label="Net Income to Shareholders (proxy)" bold topBorder={RULE_TOTAL} />
+              {COLUMNS.map((c) => (
+                <DataCell
+                  key={c}
+                  column={c}
+                  text={fmtM(model[c].netIncome)}
+                  value={model[c].netIncome}
+                  prior={growthPrior(c, fy25.netIncome)}
+                  bold
+                  topBorder={RULE_TOTAL}
+                />
+              ))}
             </tr>
           </tbody>
         </table>
@@ -516,8 +399,13 @@ export default function ForecastTable({ drivers }: ForecastTableProps) {
         style={{ borderColor: "var(--color-border)" }}
       >
         <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
-          Below-the-line held fixed at ($5,147M) — includes corporate costs, interest, tax, and minority interests.
-          YoY growth shown below each forecast value. ▲ green = positive, ▼ red = negative.
+          FY26 includes a 53rd week. The forecast assumes a +2% revenue benefit from it; Disney
+          estimates it added about $1.6 billion (2%) to revenue. Below-the-line is as reported in
+          the actual columns (corporate costs, restructuring, interest, acquisition amortization,
+          tax, minority interests); the forecast holds the FY25 amount. In the forecast column,
+          cost lines keep their fiscal 2025 shares and equity income is held at the fiscal 2025
+          level. Growth
+          shown under FY26 Actual is against FY25 Actual. ▲ green = positive, ▼ red = negative.
         </p>
       </div>
     </div>
